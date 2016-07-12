@@ -20,29 +20,30 @@ var userSchema = mongoose.Schema({
   sessionId: String
 });
 
-userSchema.plugin(findOrCreate);
-
 var messageSchema = mongoose.Schema({
   from: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
-    required: true
+    required: true,
+    ref: 'User'
   },
   to: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
+    required: true,
+    ref: 'User'
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
     required: true
   },
-  createdAt: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message'
-  },
-  message: {
+  body: {
     type: String,
-    default: "Ho!",
+    default: 'Yo!',
     required: true
   }
 });
+
+userSchema.plugin(findOrCreate);
 
 module.exports = {
   User: mongoose.model('User', userSchema),

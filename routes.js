@@ -2,7 +2,8 @@
 
 var bcrypt = require('bcrypt');
 var express = require('express');
-var models = require('./models');
+var User = models.User;
+var Message = models.Message;
 var _ = require('underscore');
 
 module.exports = function (passport) {
@@ -70,6 +71,59 @@ module.exports = function (passport) {
     res.json({
       success: true,
       user: user
+    });
+  });
+
+  router.get('/users', function(req, res) {
+    User.find(function(err, users) {
+      if (err) {
+        res.status(500).json({
+          success: false,
+          error: err.message
+        });
+      } else {
+        res.json({
+          success: true,
+          users: users.map(_.partial(_.pick, _, ['username', '_id']))
+        });
+      }
+    });
+  });
+
+  router.get('/messages', function(req, res) {
+    Message.find({$or: [{from: req.user._id}, {to: req.user._id}]})
+      .populate('to from', 'username')
+      .exec(function(err, messages) {
+        if (err) {
+          res.status(500).json({
+            success: false,
+            error: err.message
+          });
+        } else {
+          res.json({
+            success: true,
+            messages: messages
+          });
+        }
+      });
+  });
+
+  router.post('/messages', function(req, res) {
+    var params = _.pick(req.body, ['body', 'to']);
+    params.from = req.user._id;
+    new Message(params).save(function(err, message) {
+      if (err) {
+        console.log('error', err, params);
+        res.status(400).json({
+          success: false,
+          error: err.message
+        });
+      } else {
+        res.json({
+          success: true,
+          message: message
+        });
+      }
     });
   });
 

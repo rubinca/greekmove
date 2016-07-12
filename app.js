@@ -14,6 +14,7 @@ var flash = require('connect-flash');
 // var FacebookStrategy = require('passport-facebook');
 
 var models = require('./models');
+var User = models.User;
 var routes = require('./routes');
 
 // Make sure we have all required env vars. If these are missing it can lead
@@ -52,7 +53,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  models.User.findById(id, function(err, user) {
+  User.findById(id, function(err, user) {
     done(err, user);
   });
 });
@@ -64,7 +65,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
     return;
   }
   // Find the user with the given username
-  models.User.findOne({ username: username }, function (err, user) {
+  User.findOne({ username: username }, function (err, user) {
     // if there's an error, finish trying to authenticate (auth failed)
     if (err) {
       console.error(err);
@@ -97,7 +98,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 //     callbackURL: process.env.callbackURL
 //   },
 //   function(accessToken, refreshToken, profile, cb) {
-//     models.User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+//     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
 //       return cb(err, user);
 //     });
 //   }
