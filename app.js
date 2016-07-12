@@ -47,11 +47,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serialize.User(function(user, done) {
+passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
 
-passport.deserialize.User(function(id, done) {
+passport.deserializeUser(function(id, done) {
   models.User.findById(id, function(err, user) {
     done(err, user);
   });

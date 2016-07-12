@@ -2,7 +2,7 @@
 
 var bcrypt = require('bcrypt');
 var express = require('express');
-var models.User = require('./models');
+var models = require('./models');
 var _ = require('underscore');
 
 module.exports = function (passport) {
