@@ -13,6 +13,7 @@ var userSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  // Not used yet below this line
   email: String,
   facebookId: String,
   registrationCode: String,
