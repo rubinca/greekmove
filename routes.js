@@ -7,26 +7,18 @@ var _ = require('underscore');
 module.exports = function (passport) {
   var router = express.Router();
 
-  router.post('/login', function(req, res, next) {
-    passport.authenticate('local', function(err, user, info) {
-      if (err) {
-        res.status(400).json( {
-          success: false,
-          error: err.message
-        });
-      } else if (!user) {
-        res.status(401).json( {
-          success: false,
-          error: info.message
-        });
-      } else {
-        res.json({
-          success: true,
-          user: user
-        });
-      }
-    })(req, res, next);
+  router.get('/login/failure', function(req, res) {
+    res.status(401).json({
+      success: false,
+      error: req.flash('error')[0]
+    });
   });
+
+  router.post('/login', passport.authenticate('local', {
+    successRedirect: '/login/success',
+    failureRedirect: '/login/failure',
+    failureFlash: true
+  }));
 
   router.post('/register', function(req, res, next) {
     var params = _.pick(req.body, ['username', 'password']);
@@ -55,6 +47,14 @@ module.exports = function (passport) {
     } else {
       next();
     }
+  });
+
+  router.get('/login/success', function(req, res) {
+    var user = _.pick(req.user, 'username', '_id');
+    res.json({
+      success: true,
+      user: user
+    });
   });
 
   return router;

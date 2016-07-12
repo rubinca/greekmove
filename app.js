@@ -10,6 +10,7 @@ var MongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var util = require('util');
+var flash = require('connect-flash');
 // var FacebookStrategy = require('passport-facebook');
 
 var User = require('./models');
@@ -30,6 +31,7 @@ if (IS_DEV) {
   mongoose.set('debug', true);
 }
 
+app.use(flash());
 app.use(logger(IS_DEV ? 'dev' : 'combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,6 +43,7 @@ app.use(session({
   secret: process.env.SECRET || 'fake secret',
   store: mongoStore
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -57,8 +60,7 @@ passport.deserializeUser(function(id, done) {
 // passport strategy
 passport.use(new LocalStrategy(function(username, password, done) {
   if (! util.isString(username)) {
-    console.log('Login failed. Username is not a string', username);
-    done(null, false);
+    done(null, false, {message: 'Username must be string.'});
     return;
   }
   // Find the user with the given username
