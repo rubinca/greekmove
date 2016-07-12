@@ -13,7 +13,8 @@ var util = require('util');
 var flash = require('connect-flash');
 // var FacebookStrategy = require('passport-facebook');
 
-var User = require('./models');
+var models = require('./models');
+var User = models.User;
 var routes = require('./routes');
 
 // Make sure we have all required env vars. If these are missing it can lead
