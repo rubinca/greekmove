@@ -6,7 +6,8 @@ var findOrCreate = require('mongoose-findorcreate');
 var userSchema = mongoose.Schema({
   username: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type: String,
@@ -17,6 +18,7 @@ var userSchema = mongoose.Schema({
   registrationCode: String,
   sessionId: String
 });
+
 userSchema.plugin(findOrCreate);
 
 module.exports = mongoose.model('User', userSchema);

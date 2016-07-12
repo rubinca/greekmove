@@ -1,14 +1,19 @@
+"use strict";
+
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var User = require('../models/user');
+var User = require('./models');
 
 // Auth routes
 router.post('/login', passport.authenticate('local'));
 router.post('/register', function(req, res, next) {
   User.create(req.body, function(err, user) {
-    if (err) return next(err);
-    res.send(user);
+    if (err) {
+      next(err);
+    } else {
+      res.send(user);
+    }
   });
 });
 
