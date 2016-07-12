@@ -38,7 +38,7 @@ var messageSchema = mongoose.Schema({
   },
   body: {
     type: String,
-    default: 'Yo',
+    default: 'HoHoHo',
     required: true
   }
 });
