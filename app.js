@@ -9,14 +9,15 @@ var mongoose = require('mongoose');
 var MongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
+var util = require('util');
 // var FacebookStrategy = require('passport-facebook');
 
-var User = require('./models/user');
-var routes = require('./routes/index');
+var User = require('./models');
+var routes = require('./routes');
 
 // Make sure we have all required env vars. If these are missing it can lead
 // to confusing, unpredictable errors later.
-var REQUIRED_ENV = "SECRET MONGODB_URI".split(" ");
+var REQUIRED_ENV = ['SECRET', 'MONGODB_URI'];
 REQUIRED_ENV.forEach(function(el) {
   if (!process.env[el])
     throw new Error("Missing required env var " + el);
@@ -32,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 mongoose.connect(process.env.MONGODB_URI);
 var mongoStore = new MongoStore({mongooseConnection: mongoose.connection});
 app.use(session({
-  secret: process.env.SECRET,
+  secret: process.env.SECRET || 'fake secret',
   store: mongoStore
 }));
 app.use(passport.initialize());
@@ -50,24 +51,33 @@ passport.deserializeUser(function(id, done) {
 
 // passport strategy
 passport.use(new LocalStrategy(function(username, password, done) {
+  if (! util.isString(username)) {
+    console.log('Login failed. Username is not a string', username);
+    done(null, false);
+    return;
+  }
   // Find the user with the given username
   User.findOne({ username: username }, function (err, user) {
     // if there's an error, finish trying to authenticate (auth failed)
     if (err) {
       console.error(err);
-      return done(err);
+      done(err);
+      return;
     }
     // if no user present, auth failed
     if (!user) {
       console.log(user);
-      return done(null, false, { message: 'Incorrect username.' });
+      done(null, false, { message: 'Incorrect username.' });
+      return;
     }
     // if passwords do not match, auth failed
     if (user.password !== password) {
-      return done(null, false, { message: 'Incorrect password.' });
+      done(null, false, { message: 'Incorrect password.' });
+      return;
     }
     // auth has has succeeded
-    return done(null, user);
+    done(null, user);
+    return;
   });
 }));
 
