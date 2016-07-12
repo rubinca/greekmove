@@ -22,4 +22,29 @@ var userSchema = mongoose.Schema({
 
 userSchema.plugin(findOrCreate);
 
-module.exports = mongoose.model('User', userSchema);
+var messageSchema = mongoose.Schema({
+  from: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+    required: true
+  },
+  to: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+    required: true
+  },
+  createdAt: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  },
+  message: {
+    type: String,
+    default: "Ho!",
+    required: true
+  }
+});
+
+module.exports = {
+  User: mongoose.model('User', userSchema),
+  Message: mongoose.model('Message', messageSchema)
+};

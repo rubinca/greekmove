@@ -13,7 +13,7 @@ var util = require('util');
 var flash = require('connect-flash');
 // var FacebookStrategy = require('passport-facebook');
 
-var User = require('./models');
+var models = require('./models');
 var routes = require('./routes');
 
 // Make sure we have all required env vars. If these are missing it can lead
@@ -47,12 +47,12 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser(function(user, done) {
+passport.serialize.User(function(user, done) {
   done(null, user._id);
 });
 
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
+passport.deserialize.User(function(id, done) {
+  models.User.findById(id, function(err, user) {
     done(err, user);
   });
 });
@@ -60,11 +60,11 @@ passport.deserializeUser(function(id, done) {
 // passport strategy
 passport.use(new LocalStrategy(function(username, password, done) {
   if (! util.isString(username)) {
-    done(null, false, {message: 'Username must be string.'});
+    done(null, false, {message: 'User must be string.'});
     return;
   }
   // Find the user with the given username
-  User.findOne({ username: username }, function (err, user) {
+  models.User.findOne({ username: username }, function (err, user) {
     // if there's an error, finish trying to authenticate (auth failed)
     if (err) {
       console.error(err);
@@ -78,13 +78,16 @@ passport.use(new LocalStrategy(function(username, password, done) {
       return;
     }
     // if passwords do not match, auth failed
-    if (user.password !== password) {
-      done(null, false, { message: 'Incorrect password.' });
-      return;
-    }
-    // auth has has succeeded
-    done(null, user);
-    return;
+    bcrypt.compare(password, user.password, function(err, res) {
+        // res == true
+        if (!res) {
+          done(null, false, { message: 'Incorrect password.' });
+          return;
+        }
+        // auth has has succeeded
+        done(null, user);
+        return;
+    });
   });
 }));
 
@@ -94,7 +97,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 //     callbackURL: process.env.callbackURL
 //   },
 //   function(accessToken, refreshToken, profile, cb) {
-//     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+//     models.User.findOrCreate({ facebookId: profile.id }, function (err, user) {
 //       return cb(err, user);
 //     });
 //   }
