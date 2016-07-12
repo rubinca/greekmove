@@ -11,6 +11,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var util = require('util');
 var flash = require('connect-flash');
+var bcrypt = require('bcrypt');
 // var FacebookStrategy = require('passport-facebook');
 
 var models = require('./models');
@@ -80,14 +81,14 @@ passport.use(new LocalStrategy(function(username, password, done) {
     }
     // if passwords do not match, auth failed
     bcrypt.compare(password, user.password, function(err, res) {
-        // res == true
-        if (!res) {
-          done(null, false, { message: 'Incorrect password.' });
-          return;
-        }
-        // auth has has succeeded
-        done(null, user);
+      // res == true
+      if (!res) {
+        done(null, false, { message: 'Incorrect password.' });
         return;
+      }
+      // auth has has succeeded
+      done(null, user);
+      return;
     });
   });
 }));
