@@ -1,12 +1,15 @@
 "use strict";
 
+var bcrypt = require('bcrypt');
 var express = require('express');
-var User = require('./models');
+var models.User = require('./models');
 var _ = require('underscore');
 
 module.exports = function (passport) {
   var router = express.Router();
-
+  
+  /* Authentication routes */
+  
   router.get('/login/failure', function(req, res) {
     res.status(401).json({
       success: false,
@@ -22,18 +25,24 @@ module.exports = function (passport) {
 
   router.post('/register', function(req, res, next) {
     var params = _.pick(req.body, ['username', 'password']);
-    User.create(params, function(err, user) {
-      if (err) {
-        res.status(400).json({
-          success: false,
-          error: err.message
-        });
-      } else {
-        res.json({
-          success: true,
-          user: user
-        });
-      }
+    bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(params.password, salt, function(err, hash) {
+          // Store hash in your password DB. 
+          params.password = hash;
+          models.User.create(params, function(err, user) {
+            if (err) {
+              res.status(400).json({
+                success: false,
+                error: err.message
+              });
+            } else {
+              res.json({
+                success: true,
+                user: user
+              });
+            }
+          });
+      });
     });
   });
 

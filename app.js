@@ -13,7 +13,7 @@ var util = require('util');
 var flash = require('connect-flash');
 // var FacebookStrategy = require('passport-facebook');
 
-var models.User = require('./models');
+var models = require('./models');
 var routes = require('./routes');
 
 // Make sure we have all required env vars. If these are missing it can lead
@@ -78,13 +78,16 @@ passport.use(new LocalStrategy(function(username, password, done) {
       return;
     }
     // if passwords do not match, auth failed
-    if (user.password !== password) {
-      done(null, false, { message: 'Incorrect password.' });
-      return;
-    }
-    // auth has has succeeded
-    done(null, user);
-    return;
+    bcrypt.compare(password, user.password, function(err, res) {
+        // res == true
+        if (!res) {
+          done(null, false, { message: 'Incorrect password.' });
+          return;
+        }
+        // auth has has succeeded
+        done(null, user);
+        return;
+    });
   });
 }));
 
