@@ -24,10 +24,15 @@ REQUIRED_ENV.forEach(function(el) {
 });
 
 var app = express();
+var IS_DEV = app.get('env') === 'development';
 
-app.use(logger('dev'));
+if (IS_DEV) {
+  mongoose.set('debug', true);
+}
+
+app.use(logger(IS_DEV ? 'dev' : 'combined'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 mongoose.connect(process.env.MONGODB_URI);
@@ -93,7 +98,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 //   }
 // ));
 
-app.use('/', routes);
+app.use(routes(passport));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -106,7 +111,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (IS_DEV) {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.send("Error: " + err.message + "\n" + err);
