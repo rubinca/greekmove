@@ -61,7 +61,7 @@ passport.deserializeUser(function(id, done) {
 // passport strategy
 passport.use(new LocalStrategy(function(username, password, done) {
   if (! util.isString(username)) {
-    done(null, false, {message: 'Username must be string.'});
+    done(null, false, {message: 'User must be string.'});
     return;
   }
   // Find the user with the given username
@@ -79,13 +79,16 @@ passport.use(new LocalStrategy(function(username, password, done) {
       return;
     }
     // if passwords do not match, auth failed
-    if (user.password !== password) {
-      done(null, false, { message: 'Incorrect password.' });
-      return;
-    }
-    // auth has has succeeded
-    done(null, user);
-    return;
+    bcrypt.compare(password, user.password, function(err, res) {
+        // res == true
+        if (!res) {
+          done(null, false, { message: 'Incorrect password.' });
+          return;
+        }
+        // auth has has succeeded
+        done(null, user);
+        return;
+    });
   });
 }));
 
