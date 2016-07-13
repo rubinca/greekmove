@@ -34,7 +34,8 @@ var messageSchema = mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now,
-    required: true
+    required: true,
+    index: true
   },
   body: {
     type: String,

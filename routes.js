@@ -93,6 +93,9 @@ module.exports = function (passport) {
 
   router.get('/messages', function(req, res) {
     Message.find({$or: [{from: req.user._id}, {to: req.user._id}]})
+      .sort({
+        timestamp: -1
+      })
       .populate('to from', 'username')
       .exec(function(err, messages) {
         if (err) {
