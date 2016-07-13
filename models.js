@@ -36,10 +36,23 @@ var messageSchema = mongoose.Schema({
     default: Date.now,
     required: true
   },
+
+  // A Message will contain one or the other of body and location,
+  // but not both--no easy way to express an XOR validation here!
   body: {
     type: String,
-    default: 'HoHoHo',
-    required: true
+    // default: 'HoHoHo',
+    required: false
+  },
+  location: {
+    longitude: {
+      type: Number,
+      required: false
+    },
+    latitude: {
+      type: Number,
+      required: false
+    }
   }
 });
 
@@ -47,5 +60,5 @@ userSchema.plugin(findOrCreate);
 
 module.exports = {
   User: mongoose.model('User', userSchema),
-  Message: mongoose.model('Message', messageSchema)
+  Message: mongoose.model('Message', messageSchema),
 };
