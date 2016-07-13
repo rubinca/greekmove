@@ -110,7 +110,7 @@ module.exports = function (passport) {
   });
 
   router.post('/messages', function(req, res) {
-    var params = _.pick(req.body, ['body', 'to']);
+    var params = _.pick(req.body, ['body', 'location', 'to']);
     params.from = req.user._id;
     new Message(params).save(function(err, message) {
       if (err) {
