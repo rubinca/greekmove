@@ -36,13 +36,10 @@ var messageSchema = mongoose.Schema({
     default: Date.now,
     required: true
   },
-
-  // A Message will contain one or the other of body and location,
-  // but not both--no easy way to express an XOR validation here!
   body: {
     type: String,
-    // default: 'HoHoHo',
-    required: false
+    default: 'HoHoHo',
+    required: true
   },
   location: {
     longitude: {
