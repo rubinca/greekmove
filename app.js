@@ -93,18 +93,6 @@ passport.use(new LocalStrategy(function(username, password, done) {
   });
 }));
 
-// passport.use(new FacebookStrategy({
-//     clientID: process.env.FB_CLIENT_ID,
-//     clientSecret: process.env.FB_CLIENT_SECRET,
-//     callbackURL: process.env.callbackURL
-//   },
-//   function(accessToken, refreshToken, profile, cb) {
-//     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-//       return cb(err, user);
-//     });
-//   }
-// ));
-
 app.use(routes(passport));
 
 // catch 404 and forward to error handler
