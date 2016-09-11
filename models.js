@@ -1,62 +1,28 @@
 "use strict";
-
 var mongoose = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate');
 
 var userSchema = mongoose.Schema({
-  username: {
-    type: String,
+  firstName: String,
+  lastName: String,
+  isAdmin: Boolean,
+  phoneNumber: String,
+  pledgeClass: String,
+  greekCode: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    unique: true
+    ref: 'Chapter'
   },
-  password: {
-    type: String,
-    required: true
-  },
-  // Not used yet below this line
+  streetName: String,
+  city: String,
+  state: String,
+  zipCode: String,
   email: String,
-  facebookId: String,
-  registrationCode: String,
-  sessionId: String
-});
-
-var messageSchema = mongoose.Schema({
-  from: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User'
-  },
-  to: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User'
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-    required: true,
-    index: true
-  },
-  body: {
-    type: String,
-    default: 'HoHoHo',
-    required: true
-  },
-  location: {
-    longitude: {
-      type: Number,
-      required: false
-    },
-    latitude: {
-      type: Number,
-      required: false
-    }
-  }
+  password: String
 });
 
 userSchema.plugin(findOrCreate);
 
 module.exports = {
-  User: mongoose.model('User', userSchema),
-  Message: mongoose.model('Message', messageSchema),
+  User: mongoose.model('User', userSchema)
 };

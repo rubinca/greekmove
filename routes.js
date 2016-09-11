@@ -30,6 +30,17 @@ module.exports = function (passport) {
     bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(params.password, salt, function(err, hash) {
         // Store hash in your password DB.
+        params.firstName = req.body.firstName;
+        params.lastName = req.body.lastName;
+        params.isAdmin = req.body.isAdmin;
+        params.phoneNumber = req.body.phoneNumber;
+        params.pledgeClass = req.body.pledgeClass;
+        params.greekCode = req.body.greekCode;
+        params.streetName = req.body.streetName;
+        params.city = req.body.city;
+        params.state = req.body.state;
+        params.zipCode = req.body.zipCode;
+        params.email = req.body.email;
         params.password = hash;
         models.User.create(params, function(err, user) {
           if (err) {
@@ -91,45 +102,7 @@ module.exports = function (passport) {
     });
   });
 
-  router.get('/messages', function(req, res) {
-    Message.find({$or: [{from: req.user._id}, {to: req.user._id}]})
-      .sort({
-        timestamp: -1
-      })
-      .populate('to from', 'username')
-      .exec(function(err, messages) {
-        if (err) {
-          res.status(500).json({
-            success: false,
-            error: err.message
-          });
-        } else {
-          res.json({
-            success: true,
-            messages: messages
-          });
-        }
-      });
-  });
 
-  router.post('/messages', function(req, res) {
-    var params = _.pick(req.body, ['body', 'location', 'to']);
-    params.from = req.user._id;
-    new Message(params).save(function(err, message) {
-      if (err) {
-        console.log('error', err, params);
-        res.status(400).json({
-          success: false,
-          error: err.message
-        });
-      } else {
-        res.json({
-          success: true,
-          message: message
-        });
-      }
-    });
-  });
 
   return router;
 };
