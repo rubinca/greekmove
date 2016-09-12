@@ -47,7 +47,9 @@ var chapterSchema = mongoose.Schema({
     required: true,
     ref: 'User'
   },
-  expiration: Date
+  expiration: Date,
+  quota: Number,
+  size: Number
 });
 
 chapterSchema.plugin(findOrCreate);

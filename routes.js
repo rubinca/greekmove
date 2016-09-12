@@ -28,36 +28,56 @@ module.exports = function (passport) {
 
   router.post('/register', function(req, res, next) {
     var params = _.pick(req.body, ['username', 'password']);
-    bcrypt.genSalt(10, function(err, salt) {
-      bcrypt.hash(params.password, salt, function(err, hash) {
-        // Store hash in your password DB.
-        params.firstName = req.body.firstName;
-        params.lastName = req.body.lastName;
-        params.isAdmin = req.body.isAdmin;
-        params.phoneNumber = req.body.phoneNumber;
-        params.pledgeClass = req.body.pledgeClass;
-        params.greekCode = req.body.greekCode;
-        params.streetName = req.body.streetName;
-        params.city = req.body.city;
-        params.state = req.body.state;
-        params.zipCode = req.body.zipCode;
-        params.email = req.body.email;
-        params.password = hash;
-        models.User.create(params, function(err, user) {
-          if (err) {
-            res.status(400).json({
-              success: false,
-              error: err.message
-            });
-          } else {
-            res.json({
-              success: true,
-              user: user
-            });
-          }
-        });
-      });
-    });
+    Chapter.findOne({"_id": req.body.greekCode})
+           .then(function(chapter) {
+             var currentTime = new Date();
+
+             if (!chapter) {
+               throw "Error: chapter does not exist"
+             }
+             else if (chapter.expiration < currentTime) {
+               throw "Error: cannot register, chapter is expired"
+             }
+             else if (chapter.size + 1 > chapter.quota) {
+               throw "Error: cannot register, chapter has exceeded member quota"
+             }
+             else {
+               chapter.size++;
+               return chapter.save;
+             }
+           })
+           .then(function(chapter) {
+             bcrypt.genSalt(10, function(err, salt) {
+               bcrypt.hash(params.password, salt, function(err, hash) {
+                 // Store hash in your password DB.
+                 params.firstName = req.body.firstName;
+                 params.lastName = req.body.lastName;
+                 params.isAdmin = req.body.isAdmin;
+                 params.phoneNumber = req.body.phoneNumber;
+                 params.pledgeClass = req.body.pledgeClass;
+                 params.greekCode = chapter.greekCode;
+                 params.streetName = req.body.streetName;
+                 params.city = req.body.city;
+                 params.state = req.body.state;
+                 params.zipCode = req.body.zipCode;
+                 params.email = req.body.email;
+                 params.password = hash;
+                 User.create(params, function(err, user) {
+                   if (err) {
+                     res.status(400).json({
+                       success: false,
+                       error: err.message
+                     });
+                   } else {
+                     res.json({
+                       success: true,
+                       user: user
+                     });
+                   }
+                 });
+               });
+             });
+           })
   });
 
   // Beyond this point the user must be logged in
@@ -142,18 +162,25 @@ module.exports = function (passport) {
     });
   });
 
-  router.delete('/user/:userId', function(req, res) {
-    User.remove({"_id": req.params.userId}, function(err) {
-      if (err) {
-        res.json({
-          success: false,
-        });
-      } else {
-        res.json({
-          success: true,
-        });
-      }
-    })
+  router.delete('/user/:greekCode/:userId', function(req, res) {
+    Chapter.findOne({"_id": req.params.greekCode})
+           .then(function(chapter) {
+             chapter.size = chapter.size - 1;
+             return chapter.save;
+           })
+           .then(function() {
+             return User.remove({"_id": req.params.userId})
+           })
+           .then(function(response) {
+             res.json({
+               success: true
+             });
+             })
+           .catch(function(err) {
+             res.json({
+               success: false
+             });
+           });
   });
 
   router.get('/events/:greekCode', function(req, res) {
@@ -285,7 +312,9 @@ module.exports = function (passport) {
     var c = new Event({
       title: req.body.title,
       announcements: [],
-      expiration: req.body.expiration
+      expiration: req.body.expiration,
+      quota: req.body.quota,
+      size: 1
     }).save(function(err, chapter) {
       if (err) {
         res.status(500).json({
@@ -309,11 +338,9 @@ module.exports = function (passport) {
           error: err.message
         });
       } else {
-        for(var key in chapter) {
-          if (req.body[key]) {
-            chapter[key] = req.body[key];
-          }
-        };
+        chapter.title = req.body.title,
+        chapter.announcements = req.body.announcements,
+        chapter.president = req.body.president,
         chapter.save(function(err, savedChapter) {
           res.json({
             success: true,
